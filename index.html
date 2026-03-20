@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vol. 2: Our First Anniversary</title>
+  <style>
+    /* =========================================
+       1. GLOBAL AESTHETICS & APP LAYOUT
+       ========================================= */
+    @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body, html {
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      font-family: 'Montserrat', sans-serif;
+      background: radial-gradient(circle at center, #fffde7 0%, #fff9c4 100%);
+      color: #1e2749; /* Deep starry navy */
+      overflow: hidden; /* Locks all scrolling, acts like a mobile app */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Subtle vintage grain overlay */
+    body::before {
+      content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
+      opacity: 0.3; pointer-events: none; z-index: 9999;
+    }
+
+    /* Cinematic Screen Transitions */
+    .screen {
+      position: absolute; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      opacity: 0; visibility: hidden; transform: scale(0.98);
+      transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), visibility 1.2s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    
+    .screen.active {
+      opacity: 1; visibility: visible; transform: scale(1); z-index: 10;
+    }
+
+    h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.5em, 6vw, 3.5em); margin-bottom: 5px; color: #1e2749; text-align: center; font-weight: 600; line-height: 1.1; }
+    .subtitle { font-family: 'Caveat', cursive; font-size: clamp(1.6em, 4vw, 2em); color: #d4a373; text-align: center; margin-top: 0; }
+
+    /* The Universal "Next Screen" Button */
+    .next-btn {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      background: #fbc02d; color: #1e2749; border: none; padding: 15px 35px;
+      border-radius: 50px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.1em;
+      cursor: pointer; box-shadow: 0 10px 20px rgba(251, 192, 45, 0.4);
+      opacity: 0; visibility: hidden; transition: opacity 0.8s ease, visibility 0.8s ease;
+      z-index: 100; letter-spacing: 1px; text-transform: uppercase;
+      animation: pulseBtn 2s infinite;
+    }
+    .next-btn.visible { opacity: 1; visibility: visible; }
+    @keyframes pulseBtn { 0% { box-shadow: 0 0 0 0 rgba(251, 192, 45, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(251, 192, 45, 0); } 100% { box-shadow: 0 0 0 0 rgba(251, 192, 45, 0); } }
+
+    /* =========================================
+       2. SCREEN 0: THE MIXTAPE
+       ========================================= */
+    .vinyl-record {
+      width: 80vw; max-width: 340px; aspect-ratio: 1; border-radius: 50%;
+      background: repeating-radial-gradient(#1a1a1a 0, #1a1a1a 4px, #2a2a2a 5px, #2a2a2a 6px);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.15);
+      display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: transform 0.4s ease;
+    }
+    .vinyl-record:hover { transform: scale(1.05); }
+    .playing-animation { animation: spinRecord 4s linear infinite; }
+    @keyframes spinRecord { 100% { transform: rotate(360deg); } }
+
+    .record-label {
+      width: 38%; aspect-ratio: 1; border-radius: 50%; background: #fffde7;
+      border: 4px solid #fbc02d; display: flex; flex-direction: column; justify-content: center; align-items: center; position: absolute;
+    }
+    .label-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2em, 3.5vw, 1.6em); color: #1e2749; font-weight: bold; text-align: center; font-style: italic; margin-bottom: 5px; }
+    .curator-text { font-family: 'Montserrat', sans-serif; font-size: 0.5em; color: #777; letter-spacing: 1px; text-transform: uppercase; }
+    .center-hole { width: 12px; height: 12px; background: #fffde7; border-radius: 50%; position: absolute; border: 1px solid #111; }
+
+    .play-instruction { margin-top: 50px; font-family: 'Caveat', cursive; font-size: clamp(1.8em, 5vw, 2.2em); color: #1e2749; text-align: center; transition: opacity 0.5s; }
+    .now-playing-screen {
+      margin-top: 25px; background-color: rgba(30, 39, 73, 0.9); color: #fbc02d;
+      font-family: 'Montserrat', sans-serif; font-size: 0.85em; letter-spacing: 2px; text-transform: uppercase;
+      padding: 10px 25px; border-radius: 30px; opacity: 0; transition: opacity 1s ease; text-align: center; backdrop-filter: blur(5px);
+    }
+
+    /* =========================================
+       3. SCREEN 1: TYPEWRITER LETTER
+       ========================================= */
+    .letter-container {
+      width: 100%; max-width: 650px;
+      font-family: 'Cormorant Garamond', serif; font-size: clamp(1.3em, 4vw, 1.6em);
+      line-height: 1.8; background: #fff; padding: clamp(30px, 8vw, 50px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.06); border-radius: 10px; position: relative; max-height: 80vh; overflow-y: auto;
+    }
+    .letter-container::before {
+      content: "S"; position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+      width: 50px; height: 50px; background: #fbc02d; color: #1e2749; font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8em; display: flex; justify-content: center; align-items: center; border-radius: 50%;
+      box-shadow: 0 5px 15px rgba(251, 192, 45, 0.4);
+    }
+    .cursor { display: inline-block; width: 2px; height: 1.2em; background-color: #1e2749; animation: blink 1s step-end infinite; vertical-align: bottom; margin-left: 2px; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* =========================================
+       4. SCREEN 2: SPINNING WHEEL
+       ========================================= */
+    .wheel-container { position: relative; margin-top: 30px; width: 85vw; max-width: 320px; aspect-ratio: 1; }
+    .wheel-pointer {
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 35px solid #1e2749; z-index: 10;
+    }
+    .wheel {
+      width: 100%; height: 100%; border-radius: 50%; position: relative;
+      background: conic-gradient(#fbc02d 0 90deg, #f9a826 90deg 180deg, #ffca28 180deg 270deg, #ffb300 270deg 360deg);
+      border: 10px solid #fff; box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      transition: transform 4s cubic-bezier(0.17, 0.67, 0.1, 1);
+    }
+    .wheel-text {
+      position: absolute; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: clamp(0.8em, 3.5vw, 1em); color: #1e2749; text-align: center; letter-spacing: 1px; text-transform: uppercase; width: 80px;
+    }
+    .text-1 { top: 25%; left: 75%; transform: translate(-50%, -50%) rotate(45deg); }
+    .text-2 { top: 75%; left: 75%; transform: translate(-50%, -50%) rotate(135deg); }
+    .text-3 { top: 75%; left: 25%; transform: translate(-50%, -50%) rotate(225deg); }
+    .text-4 { top: 25%; left: 25%; transform: translate(-50%, -50%) rotate(315deg); }
+
+    .spin-btn {
+      margin-top: 40px; padding: 15px 40px; font-size: 1em; background: #1e2749; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 10px 25px rgba(30, 39, 73, 0.3); transition: all 0.3s ease; font-family: 'Montserrat', sans-serif;
+    }
+    .spin-btn:hover:not(:disabled) { background: #283655; transform: translateY(-3px); }
+    .spin-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(30, 39, 73, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(8px);
+    }
+    .ticket { background: #fffde7; border: 2px solid #fbc02d; padding: clamp(30px, 6vw, 50px); text-align: center; width: 100%; max-width: 420px; border-radius: 10px; position: relative; }
+    .ticket::after { content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 1px dashed #fbc02d; pointer-events: none; }
+    .ticket h3 { font-family: 'Montserrat', sans-serif; color: #f9a826; font-size: clamp(1.2em, 4vw, 1.5em); margin: 0 0 20px 0; letter-spacing: 3px; text-transform: uppercase; }
+    .ticket p { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.6em, 5vw, 2em); color: #1e2749; line-height: 1.3; font-style: italic; }
+    .claim-btn { margin-top: 25px; padding: 12px 35px; background: #1e2749; color: #fff; border: none; border-radius: 30px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: background 0.3s; z-index: 2; }
+
+    /* =========================================
+       5. SCREEN 3: SUNFLOWERS
+       ========================================= */
+    .bouquet { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(20px, 5vw, 40px); margin-top: 30px; }
+    .sunflower { font-size: clamp(4.5em, 12vw, 6.5em); cursor: pointer; transition: all 0.4s ease; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.08)); }
+    .sunflower:hover { transform: scale(1.15) rotate(12deg); }
+    .sunflower-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8em, 5vw, 2.2em); margin-top: 30px; min-height: 90px; color: #1e2749; opacity: 0; transition: opacity 0.5s ease; font-style: italic; text-align: center; max-width: 600px; }
+
+    /* =========================================
+       6. SCREEN 4: PINBOARD (Upgraded Texts)
+       ========================================= */
+    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 900px; margin-top: 20px; }
+    .note {
+      width: 40%; min-width: 140px; padding: 25px 15px 15px 15px; box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      font-family: 'Caveat', cursive; font-size: clamp(1.2em, 4vw, 1.5em); text-align: center; position: relative; color: #333; transition: transform 0.3s;
+    }
+    .note::before {
+      content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+      width: 60px; height: 20px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(2px); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .note:nth-child(1) { transform: rotate(-4deg); background-color: #fffde7; }
+    .note:nth-child(2) { transform: rotate(3deg); background-color: #fef5d4; }
+    .note:nth-child(3) { transform: rotate(-2deg); background-color: #fff9c4; }
+    .note:nth-child(4) { transform: rotate(4deg); background-color: #fff59d; }
+  </style>
+</head>
+<body>
+
+  <audio id="bg-music" loop preload="auto">
+    <source src="yellow.mp3" type="audio/mpeg">
+  </audio>
+
+  <button id="next-btn" class="next-btn">Tap to Continue 💛</button>
+
+  <section id="screen-0" class="screen active">
+    <div class="vinyl-record" id="record-btn">
+      <div class="record-label">
+        <span class="label-text">Vol. 2</span>
+        <span class="curator-text">For Sarib</span>
+      </div>
+      <div class="center-hole"></div>
+    </div>
+    <div class="now-playing-screen" id="now-playing-screen">Now Playing: "Yellow"</div>
+    <div class="play-instruction" id="play-instruction">Tap the record to begin</div>
+  </section>
+
+  <section id="screen-1" class="screen">
+    <div class="letter-container">
+      <span id="typewriter-text"></span><span class="cursor" id="type-cursor"></span>
+    </div>
+  </section>
+
+  <section id="screen-2" class="screen">
+    <h2>The Digital Care Package</h2>
+    <p class="subtitle">Because I can't spoil you in person today.</p>
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <div class="wheel" id="wheel">
+        <div class="wheel-text text-1">Uber<br>Eats</div>
+        <div class="wheel-text text-2">Movie<br>Night</div>
+        <div class="wheel-text text-3">Argument<br>Pass</div>
+        <div class="wheel-text text-4">Real<br>Letter</div>
+      </div>
+    </div>
+    <button class="spin-btn" id="spinBtn">Spin the Wheel</button>
+  </section>
+
+  <div class="modal-overlay" id="ticketModal">
+    <div class="ticket">
+      <h3>Admit One</h3>
+      <p id="ticketText">Your prize will appear here!</p>
+      <button class="claim-btn" id="closeTicket">Claim Surprise</button>
+    </div>
+  </div>
+
+  <section id="screen-3" class="screen">
+    <h2>Why You Are My Sunflower</h2>
+    <p class="subtitle">Tap each one to see why...</p>
+    <div class="bouquet">
+      <div class="sunflower" onclick="showFlowerText(0)">🌻</div>
+      <div class="sunflower" onclick="showFlowerText(1)">🌻</div>
+      <div class="sunflower" onclick="showFlowerText(2)">🌻</div>
+      <div class="sunflower" onclick="showFlowerText(3)">🌻</div>
+    </div>
+    <div class="sunflower-text" id="flower-caption"></div>
+  </section>
+
+  <section id="screen-4" class="screen">
+    <h2>The Future Pinboard</h2>
+    <p class="subtitle">Plans for when the distance finally closes.</p>
+    <div class="board">
+      <div class="note">Our first real coffee date—sitting across the table instead of across a screen.</div>
+      <div class="note">A movie night where we don't have to text "3, 2, 1, play!" to sync up.</div>
+      <div class="note">The day we permanently delete the world clock widgets from our phones.</div>
+      <div class="note">Falling asleep in the same time zone, without a screen between us.</div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      let currentScreenIndex = 0;
+      const totalScreens = 5;
+      const nextBtn = document.getElementById('next-btn');
+
+      // 1. Core Navigation System
+      function transitionToNextScreen() {
+        if (currentScreenIndex < totalScreens - 1) {
+          // Fade out current screen and button
+          document.getElementById(`screen-${currentScreenIndex}`).classList.remove('active');
+          nextBtn.classList.remove('visible'); 
+          
+          currentScreenIndex++;
+          
+          // Fade in next screen
+          document.getElementById(`screen-${currentScreenIndex}`).classList.add('active');
+
+          // Trigger screen-specific logic
+          if (currentScreenIndex === 1) {
+            setTimeout(startTypewriter, 1200); // Wait for transition to finish before typing
+          } else if (currentScreenIndex === 3) {
+             // For Sunflowers, show button after 5 seconds automatically so he isn't stuck
+             setTimeout(() => { nextBtn.classList.add('visible'); }, 5000);
+          } else if (currentScreenIndex === 4) {
+             // Final screen, no next button needed
+             nextBtn.style.display = 'none';
+          }
+        }
+      }
+
+      nextBtn.addEventListener('click', transitionToNextScreen);
+
+      // 2. Screen 0: Audio and Auto-Transition
+      const recordBtn = document.getElementById('record-btn');
+      const bgMusic = document.getElementById('bg-music');
+      const npScreen = document.getElementById('now-playing-screen');
+      const playInstr = document.getElementById('play-instruction');
+
+      recordBtn.addEventListener('click', () => {
+        let playPromise = bgMusic.play();
+        if (playPromise !== undefined) {
+          playPromise.then(_ => {
+            recordBtn.classList.add('playing-animation');
+            playInstr.style.opacity = '0'; 
+            npScreen.style.opacity = '1';
+            setTimeout(transitionToNextScreen, 2000); // Auto move to Letter after 2 seconds
+          }).catch(e => {
+            recordBtn.classList.add('playing-animation');
+            playInstr.style.opacity = '0'; 
+            npScreen.style.opacity = '1';
+            setTimeout(transitionToNextScreen, 2000);
+          });
+        }
+      });
+
+      // 3. Screen 1: Typewriter Logic
+      const letterContent = `My dearest Sarib, \n\nIt feels completely surreal that we are sitting here celebrating our first official anniversary. When I look back at this incredible year we have spent together, calling you mine has been the greatest gift. \n\nI know the distance between us makes days like today hard. I wish I could reach through this screen and celebrate with you properly. But this long-distance is just a test of how far love can travel, and ours has already crossed every time zone and every mile. \n\nThis website is your virtual care package. It's a collection of my love, my promises, and everything I want to give you until I can finally give it to you in person. \n\nHappy 1st Anniversary. I love you, always.`;
+      const typewriterElement = document.getElementById('typewriter-text');
+      const typeCursor = document.getElementById('type-cursor');
+      let i = 0; let typingStarted = false;
+
+      function startTypewriter() {
+        if (typingStarted) return; 
+        typingStarted = true; typeWriter();
+      }
+
+      function typeWriter() {
+        if (i < letterContent.length) {
+          if (letterContent.charAt(i) === '\n') { typewriterElement.innerHTML += '<br>'; } 
+          else { typewriterElement.innerHTML += letterContent.charAt(i); }
+          i++; setTimeout(typeWriter, 35); 
+        } else {
+          // Finished typing! Hide cursor and reveal "Next" button
+          typeCursor.style.display = 'none';
+          setTimeout(() => { nextBtn.classList.add('visible'); }, 1000);
+        }
+      }
+
+      // 4. Screen 2: Wheel Logic
+      const wheel = document.getElementById('wheel');
+      const spinBtn = document.getElementById('spinBtn');
+      const ticketModal = document.getElementById('ticketModal');
+      const ticketText = document.getElementById('ticketText');
+      const closeTicket = document.getElementById('closeTicket');
+
+      let currentRotation = 0;
+      const prizes = [
+        { text: "A late-night UberEats delivery, paid for and sent to your door by me!", stopAngle: 315 },
+        { text: "You have absolute power to pick the next movie we watch together.", stopAngle: 225 },
+        { text: "One 'Get Out of an Argument Free' card. Use it wisely.", stopAngle: 135 },
+        { text: "A long, handwritten letter sealed and mailed to you tomorrow.", stopAngle: 45 } 
+      ];
+
+      spinBtn.addEventListener('click', () => {
+        spinBtn.disabled = true; spinBtn.innerText = "Spinning...";
+        const winningIndex = Math.floor(Math.random() * prizes.length);
+        const winner = prizes[winningIndex];
+        
+        const baseRotation = Math.ceil(currentRotation / 360) * 360;
+        currentRotation = baseRotation + 1800 + winner.stopAngle;
+        wheel.style.transform = `rotate(${currentRotation}deg)`;
+        
+        setTimeout(() => {
+          ticketText.innerText = winner.text;
+          ticketModal.style.display = 'flex';
+        }, 4200); 
+      });
+
+      closeTicket.addEventListener('click', () => { 
+        ticketModal.style.display = 'none'; 
+        spinBtn.disabled = false; spinBtn.innerText = "Spin Again";
+        // Reveal next button only after they claim their prize
+        setTimeout(() => { nextBtn.classList.add('visible'); }, 500);
+      });
+
+    });
+
+    // 5. Screen 3: Sunflower Logic
+    const flowerCaption = document.getElementById('flower-caption');
+    const nextBtnGlobal = document.getElementById('next-btn');
+    const traits = [
+      "For your endless patience with the miles between us.",
+      "For your sense of humor that makes every call the best part of my day.",
+      "For your warmth, which has made you my safe space since day one.",
+      "Because no matter what time zone we are in, you are my light."
+    ];
+
+    function showFlowerText(index) {
+      flowerCaption.style.opacity = '0'; 
+      setTimeout(() => { 
+        flowerCaption.innerText = traits[index]; 
+        flowerCaption.style.opacity = '1'; 
+        // Ensure they can proceed if they tap a flower before the 5 second timer
+        nextBtnGlobal.classList.add('visible');
+      }, 250); 
+    }
+  </script>
+</body>
+</html>
